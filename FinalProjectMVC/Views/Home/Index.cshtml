@@ -1,0 +1,83 @@
+﻿@using Microsoft.AspNetCore.Identity
+@inject SignInManager<IdentityUser> SignInManager
+@inject UserManager<IdentityUser> UserManager
+
+@model FragranceDisplayModel
+@{
+    ViewData["Title"] = "Home Page";
+}
+<div class="my-2">
+    <form asp-action="Index" class="row row-cols-log-auto g-3 align-items-center">
+        <div class="col-12">
+            <label class="visually-hidden for="categoryId">Categories</label>
+            <select class="form-select" id="categoryId" name="categoryId">
+                <option selected>Choose...</option>
+                @foreach (var category in Model.Categories)
+                {
+                    <option selected="@(category.Id == Model.CategoryId)" value="@category.Id">@category.CategoryName</option>
+                }
+
+            </select>
+        </div>
+        <div class="col-12">
+            <label class="visually-hidden" for="sterm">Search by fragrance</label>
+            <div class="input-group">
+                <div class="input-group-text"></div>
+                <input type="text" class="form-control"- value="@Model.STerm" id="sterm" name = "sterm" placeholder="Search by fragrance" />
+            </div>
+            <div class="col-12">
+                <button type="submit" class="btn btn-primary">Search</button>
+                <a href="/Home/Index" class="btn btn-dark">Reset</a>
+            </div>
+        </div>
+    </form>
+</div>
+<div class="w-100 d-flex flex-wrap">
+    @foreach (var fragrance in Model.Fragrances)
+    {
+        <div class="card mx-2 mb-4" style="width: 16rem;">
+            @if (string.IsNullOrEmpty(fragrance.Image))
+            {
+                <img style="width:100%; height:300px" src="/Images/NoImage.png" class="card-img-top" alt="...">
+            }
+            else
+            {
+                <img style="width:100%; height:300px;" src="/Images/@fragrance.Image" class="card-img-top" alt="...">
+            }
+            <div class="card-body">
+                <h5 class="card-title">@fragrance.Title</h5>
+                <p class="card-text">
+                    <b>Category:</b>@fragrance.CategoryName<br />
+                    <b>Perfumer:</b>@fragrance.Perfumer<br />
+                    <b>Price:</b>@fragrance.Price<br />
+                </p>
+                <button type="button" onclick="add('@fragrance.Id')" class="btn btn-primary">
+                    Add to Cart <i class="bi bi-cart"></i>
+                </button>
+            </div>
+        </div>
+    }
+</div>
+
+
+@section Scripts {
+    <script>
+        async function add(fragranceId) {
+            var usernameEl = document.getElementById("username");
+            if (usernameEl == null) {
+                window.location.href = "/Identity/Account/Login";
+                try {
+                    var response = await fetch(`/Cart/AddItem?fragranceId=${fragranceId}`);
+                    if (response.status == 200) {
+                        var result = await response.json();
+                        var cartCountEl = document.getElementById("cartCount");
+                        cartCountEl.innerHTML = result;
+                        window.location.href = "#cartCount";
+                    }
+                } catch (err) {
+                    console.log(err);
+                }
+            }
+        }
+    </script>
+}
